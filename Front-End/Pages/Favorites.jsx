@@ -1,28 +1,28 @@
-// src/pages/Watchlist.js
+// src/pages/Favorites.js
 
 import React, { useEffect, useState } from 'react';
 import axiosInstance from '../src/utils/axios'
 
-const Watchlist = () => {
-    const [watchlist, setWatchlist] = useState([]);
+const Favorites = () => {
+    const [favorites, setFavorites] = useState([]);
 
     useEffect(() => {
-        const fetchWatchlist = async () => {
+        const fetchFavorites = async () => {
             try {
-                const response = await axiosInstance.get('/watchlist');
-                setWatchlist(response.data);
+                const response = await axiosInstance.get('/favorites');
+                setFavorites(response.data);
             } catch (error) {
-                console.error('Error fetching watchlist:', error);
+                console.error('Error fetching favorites:', error);
             }
         };
 
-        fetchWatchlist();
+        fetchFavorites();
     }, []);
 
     return (
         <div>
-            <h1>Watchlist</h1>
-            {watchlist.map((movie) => (
+            <h1>Favorites</h1>
+            {favorites.map((movie) => (
                 <div key={movie._id}>
                     <h2>{movie.title}</h2>
                     <p>{movie.description}</p>
@@ -36,4 +36,4 @@ const Watchlist = () => {
     );
 };
 
-export default Watchlist;
+export default Favorites;
