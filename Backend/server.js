@@ -9,7 +9,7 @@ const Movies=require('./Models/Movies')
 const movieRoutes = require('./Routes/MovieRoutes');
 const watchlistRoutes=require('./Routes/WatchlistRoutes');
 const favoritesRoutes=require('./Routes/FavoritesRoutes')
-const aiGeneratedMovie=require('./Routes/AiMovieRoutes')
+
 dotenv.config(); // Load environment variables
 
 const app = express();
@@ -25,18 +25,14 @@ mongoose
   .then(() => console.log(" Connected to MongoDB"))
   .catch((err) => console.error(" MongoDB connection error:", err));
 
- // 🔑 OpenAI API Setup
-  const configuration = new Configuration({
-      apiKey: process.env.OPENAI_API_KEY,
-  });
-  const openai = new OpenAIApi(configuration);
+
   
 // Use the auth routes for handling signup and login
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
 app.use('/api/watchlist', watchlistRoutes);
 app.use('/api/favorites', favoritesRoutes);
-app.use("/api/ai-movie-details",aiGeneratedMovie );
+
 
 // Basic Route
 app.get("/", (req, res) => {

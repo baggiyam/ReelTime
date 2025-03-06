@@ -5,7 +5,7 @@ const User = require('../Models/User');
 const { protect } = require("../middleware/authMiddleware")
 const handleError=require("../utils/errorHandler");
 // Create a new movie (user must be authenticated)
-router.post("/", protect, async (req, res) => {
+router.post("/add", protect, async (req, res) => {
   const { title, description, releaseDate, language, genre, imdbRating, googleRating, suggestedToAll } = req.body;
 
   try {
