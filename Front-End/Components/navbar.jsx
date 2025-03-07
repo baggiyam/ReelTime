@@ -15,10 +15,55 @@ function Navbar({ searchTerm, onSearchChange }) {
 
             {/* Navigation Links */}
             <div className="nav-links">
-                <NavLink to="/" className="nav-link">Home</NavLink>
-                <NavLink to="/login" className="nav-link">Login</NavLink>
-                <NavLink to="/signup" className="nav-link">Signup</NavLink>
-                <NavLink to="/movielist" className="nav-link">MovieList</NavLink>
+                <NavLink
+                    to="/"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Home
+                </NavLink>
+                <NavLink
+                    to="/login"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Login
+                </NavLink>
+                <NavLink
+                    to="/signup"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Signup
+                </NavLink>
+                <NavLink
+                    to="/movielist"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    MovieList
+                </NavLink>
+                <NavLink
+                    to="/watchlist"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Watchlist
+                </NavLink>
+                <NavLink
+                    to="/favorites"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Favorites
+                </NavLink>
+                <NavLink
+                    to="/watched"
+                    className="nav-link"
+                    activeClassName="active-link"
+                >
+                    Watched
+                </NavLink>
             </div>
 
             {/* Conditional Search Bar */}

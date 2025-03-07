@@ -23,6 +23,7 @@ const LoginPage = () => {
 
 
       localStorage.setItem('authToken', response.data.token);
+      navigate('/');
 
     } catch (error) {
       setErrorMessage('Invalid email or password');
@@ -61,7 +62,7 @@ const LoginPage = () => {
             type="submit"
             fullWidth
             variant="contained"
-            className="login-button" 
+            className="login-button"
           >
             Log In
           </Button>

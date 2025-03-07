@@ -24,7 +24,7 @@ const SignupPage = () => {
       console.log(response.data);
 
       // Redirect to Login page after successful signup
-      navigate('/Home');
+      navigate('/');
     } catch (error) {
       setErrorMessage('Error signing up. Please try again!');
     }

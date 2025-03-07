@@ -11,7 +11,6 @@ import Favorites from '../pages/Favorites';
 import Watchlist from '../pages/Watchlist';
 import Watched from '../pages/Watched'; // Import Watched Page
 import Navbar from '../Components/navbar';
-import LoginPage from '../pages/login';
 import Footer from '../Components/Footer';
 
 const App = () => {
@@ -25,9 +24,14 @@ const App = () => {
     }
   }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem('token'); // Remove token from localStorage
+    setToken(null); // Reset state
+  };
+
   return (
     <Router>
-      <Navbar />
+      <Navbar searchTerm="" onSearchChange={() => { }} /> {/* Pass actual search props if necessary */}
 
       <Routes>
         <Route path="/" element={<Home />} />
