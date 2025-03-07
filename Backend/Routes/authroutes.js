@@ -7,6 +7,8 @@ const mongoose = require("mongoose");
 const router = express.Router();
 const User=require('../Models/User.js')
 const handleError=require("../utils/errorHandler.js")
+const { protect, admin } = require('../middleware/authMiddleware'); 
+
 // Signup Route
 router.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
@@ -76,5 +78,13 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ message: "Server error!", error: error.message });
   }
 });
-
+router.get('/users', async (req, res) => {
+  try {
+      const users = await User.find().select('-password'); // Exclude password field from the response
+      res.json(users); // Return the list of users
+  } catch (error) {
+      console.error(error);
+      res.status(500).json({ message: 'Server error' });
+  }
+})
 module.exports = router;

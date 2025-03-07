@@ -1,10 +1,10 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-import "../Styles/movielist.css"; // You can reuse this CSS for styling
+import "../Styles/movielist.css";
 
-const Watchlist = ({ token }) => {
-    const [watchlistMovies, setWatchlistMovies] = useState([]);
+const Watched = ({ token }) => {
+    const [watchedMovies, setWatchedMovies] = useState([]);
     const navigate = useNavigate();
 
     useEffect(() => {
@@ -12,25 +12,25 @@ const Watchlist = ({ token }) => {
             return;
         }
 
-        // Fetch the watchlist for the logged-in user
+        // Fetch the watched movies for the logged-in user
         axios
-            .get("http://localhost:5002/api/movies/watchlist", {
+            .get("http://localhost:5002/api/movies/watched", {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((response) => {
-                setWatchlistMovies(response.data);
+                setWatchedMovies(response.data);
             })
             .catch((error) => {
-                console.error("Error fetching watchlist movies:", error);
+                console.error("Error fetching watched movies:", error);
             });
     }, [token]);
 
     return (
         <div className="movie-list-page">
-            <h1>Your Watchlist</h1>
+            <h1>Your Watched Movies</h1>
             <div className="movie-list">
-                {watchlistMovies.length > 0 ? (
-                    watchlistMovies.map((movie) => (
+                {watchedMovies.length > 0 ? (
+                    watchedMovies.map((movie) => (
                         <div key={movie._id} className="movie-card">
                             <img src={movie.poster} alt={movie.title} />
                             <div className="movie-info">
@@ -41,11 +41,11 @@ const Watchlist = ({ token }) => {
                         </div>
                     ))
                 ) : (
-                    <p>No movies in your watchlist</p>
+                    <p>No movies in your watched list</p>
                 )}
             </div>
         </div>
     );
 };
 
-export default Watchlist;
+export default Watched;

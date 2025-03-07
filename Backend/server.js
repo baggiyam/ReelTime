@@ -7,8 +7,7 @@ const authRoutes = require('./Routes/authroutes');
 const User = require('./Models/User'); 
 const Movies=require('./Models/Movies')
 const movieRoutes = require('./Routes/MovieRoutes');
-const watchlistRoutes=require('./Routes/WatchlistRoutes');
-const favoritesRoutes=require('./Routes/FavoritesRoutes')
+
 
 dotenv.config(); // Load environment variables
 
@@ -18,9 +17,9 @@ const app = express();
 app.use(express.json());
 app.use(morgan("dev"));
 app.use(cors({
-  origin: 'http://localhost:5173',  // Allow requests from the frontend running on port 5173
-  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
-  credentials: true,  // Allow cookies if needed
+  origin: 'http://localhost:5173', 
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  
+  credentials: true,  
 }));
 // Connect to MongoDB
 mongoose
@@ -33,8 +32,7 @@ mongoose
 // Use the auth routes for handling signup and login
 app.use("/api/auth", authRoutes);
 app.use("/api/movies", movieRoutes);
-app.use('/api/watchlist', watchlistRoutes);
-app.use('/api/favorites', favoritesRoutes);
+
 
 
 // Basic Route

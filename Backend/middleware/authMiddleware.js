@@ -1,29 +1,38 @@
-const jwt = require("jsonwebtoken");
-const User = require("../Models/User");
+// backend/middleware/authMiddleware.js
+const jwt = require('jsonwebtoken');
+const User = require('../Models/User');
 
+// Protect middleware to check if the user is authenticated
 const protect = async (req, res, next) => {
-  let token;
+    const token = req.header('Authorization')?.replace('Bearer ', '');
 
-  if (req.headers.authorization && req.headers.authorization.startsWith("Bearer")) {
-    try {
-      // Get the token from the Authorization header
-      token = req.headers.authorization.split(" ")[1];
-
-      // Verify the token and decode it
-      const decoded = jwt.verify(token, "your_jwt_secret");
-
-      // Get the user from the decoded token and attach it to the request
-      req.user = await User.findById(decoded.userId).select("-password");
-      
-      next();
-    } catch (error) {
-      res.status(401).json({ message: "Not authorized, token failed" });
+    if (!token) {
+        return res.status(401).json({ message: 'No token, authorization denied' });
     }
-  }
 
-  if (!token) {
-    res.status(401).json({ message: "Not authorized, no token" });
-  }
+    try {
+        // Decode token to get user info
+        const decoded = jwt.verify(token, process.env.JWT_SECRET);
+        const user = await User.findById(decoded.userId);
+
+        if (!user) {
+            return res.status(401).json({ message: 'User not found' });
+        }
+
+        req.user = user; // Attach user to request object
+        next();
+    } catch (error) {
+        res.status(401).json({ message: 'Token is not valid' });
+    }
 };
 
-module.exports = { protect };
+// Admin middleware to check if the logged-in user is an admin
+const admin = (req, res, next) => {
+    // Check if user has the admin role
+    if (req.user.role !== 'admin') {
+        return res.status(403).json({ message: 'Not authorized, admin access only' });
+    }
+    next(); // Proceed to the next middleware/route handler if admin
+};
+
+module.exports = { protect, admin };

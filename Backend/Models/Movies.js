@@ -27,10 +27,14 @@ const movieSchema = new mongoose.Schema(
     imdbRating: {
       type: Number,
       required: true,
+      min: 0,
+  max: 10,
     },
     googleRating: {
       type: Number,
       required: true,
+      min: 0,
+  max: 10,
     },
     userAdded: {
       type: mongoose.Schema.Types.ObjectId,

@@ -15,11 +15,21 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
   },
-  role: {
-    type: String,
-    enum: ['user', 'superuser'], 
-    default: 'user'
-  }
+  watchlist: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Movie',
+}],
+favorites: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Movie',
+}],
+watchedMovies: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Movie' }],
+role:{
+  type:String,
+  enum:['admin','user'],
+  default:'user',
+}
+
 }
 
 );

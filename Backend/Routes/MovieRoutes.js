@@ -1,148 +1,149 @@
 const express = require("express");
 const router = express.Router();
 const Movie = require("../Models/Movies");
-const User = require('../Models/User');
-const { protect } = require("../middleware/authMiddleware")
-const handleError=require("../utils/errorHandler");
-// Create a new movie (user must be authenticated)
-router.post("/add", protect, async (req, res) => {
-  const { title, description, releaseDate, language, genre, imdbRating, googleRating, poster,trailer,suggestedToAll } = req.body;
+const User = require("../Models/User"); // Import the User model
+const { protect } = require("../middleware/authMiddleware");
+const handleError = require("../utils/errorHandler");
 
-  try {
-    // Create a new movie, adding the user who created it
-    const movie = new Movie({
-      title,
-      description,
-      releaseDate,
-      language,
-      genre,
-      imdbRating,
-      googleRating,
-      poster,
-      trailer,
-      suggestedToAll,
-      userAdded: req.user._id, 
-    });
-
-    await movie.save();
-    res.status(201).json(movie); 
-  } catch (error) {
-    handleError(res, error, "Error creating movie");
-  }
-});
-
-// Get all movies (no authentication needed)
 router.get("/", async (req, res) => {
   try {
     const movies = await Movie.find();
     res.status(200).json(movies);
   } catch (error) {
-    handleError(res, error, "Error fetching movies");
+    handleError(res, error, "Error fetching all movies");
   }
 });
-
-// Get a single movie by ID (no authentication needed)
 router.get("/:id", async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    // Extract movie ID from URL parameters
+    const { id } = req.params;
+
+    // Find the movie by its ID in the database
+    const movie = await Movie.findById(id);
+
+    // If movie is not found, return an error response
     if (!movie) {
-      return res.status(404).json({ message: "Movie not found!" });
+      return res.status(404).json({ message: "Movie not found" });
     }
+
+    // If movie is found, return the movie details
     res.status(200).json(movie);
   } catch (error) {
-   handleError(res,error,"Error fetching the movie!" );
+    handleError(res, error, "Error fetching movie details");
   }
 });
 
-// Update a movie (user must be authenticated)
-router.put("/:id", protect, async (req, res) => {
-  const { title, description, releaseDate, language, genre, imdbRating, googleRating, suggestedToAll } = req.body;
-
+// Add movie to the watchlist
+router.post("/add-to-watchlist/:movieId", protect, async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    const { movieId } = req.params;
+    const user = req.user;
+
+    // Check if the movie exists
+    const movie = await Movie.findById(movieId);
     if (!movie) {
-        handleError(res,error, "Movie not found!");
+      return res.status(404).json({ message: "Movie not found" });
     }
 
-    // Check if the logged-in user is the one who added the movie (optional validation)
+    // Check if movie is already in watchlist
+    if (user.watchlist.includes(movieId)) {
+      return res.status(400).json({ message: "Movie already in watchlist" });
+    }
 
-    // Update the movie fields
-    movie.title = title || movie.title;
-    movie.description = description || movie.description;
-    movie.releaseDate = releaseDate || movie.releaseDate;
-    movie.language = language || movie.language;
-    movie.genre = genre || movie.genre;
-    movie.imdbRating = imdbRating || movie.imdbRating;
-    movie.googleRating = googleRating || movie.googleRating;
-    movie.suggestedToAll = suggestedToAll || movie.suggestedToAll;
+    // Add the movie to the user's watchlist
+    user.watchlist.push(movieId);
+    await user.save();
 
-    await movie.save();
-    res.status(200).json(movie);
+    res.status(200).json({ message: "Movie added to watchlist" });
   } catch (error) {
-    handleError(res,error,"Error updating movie!" );
+    handleError(res, error, "Error adding movie to watchlist");
   }
 });
 
-// Delete a movie (user must be authenticated)
-router.delete("/:id", protect, async (req, res) => {
+// Add movie to the favorites
+router.post("/add-to-favorites/:movieId", protect, async (req, res) => {
   try {
-    const movie = await Movie.findById(req.params.id);
+    const { movieId } = req.params;
+    const user = req.user;
+
+    // Check if the movie exists
+    const movie = await Movie.findById(movieId);
     if (!movie) {
-      return res.status(404).json({ message: "Movie not found!" });
+      return res.status(404).json({ message: "Movie not found" });
     }
 
-    // Check if the logged-in user is the one who added the movie (optional validation)
-    if (movie.userAdded.toString() !== req.user._id.toString()) {
-      return res.status(403).json({ message: "You can only delete movies that you added!" });
+    // Check if movie is already in favorites
+    if (user.favorites.includes(movieId)) {
+      return res.status(400).json({ message: "Movie already in favorites" });
     }
 
-    await movie.remove();
-    res.status(200).json({ message: "Movie deleted successfully!" });
+    // Add the movie to the user's favorites
+    user.favorites.push(movieId);
+    await user.save();
+
+    res.status(200).json({ message: "Movie added to favorites" });
   } catch (error) {
-    handleError(res,error, "Server error!");
+    handleError(res, error, "Error adding movie to favorites");
   }
-
 });
 
-// ✅ Filter Movies (GET Request with Query Parameters)
-router.get("/filter", async (req, res) => {
-  const { genre, language, imdbRating, googleRating } = req.query;
-
-  let filterConditions = {};
-
-  // If 'genre' is provided in the query parameters, add it to the filter conditions
-  if (genre) {
-    filterConditions.genre = genre;
-  }
-
-  // If 'language' is provided, add it to the filter conditions
-  if (language) {
-    filterConditions.language = language;
-  }
-
-  // If 'imdbRating' is provided, filter movies with IMDb rating greater than or equal to the given value
-  if (imdbRating) {
-    filterConditions.imdbRating = { $gte: parseFloat(imdbRating) }; // Ensure imdbRating is a number
-  }
-
-  // If 'googleRating' is provided, filter movies with Google rating greater than or equal to the given value
-  if (googleRating) {
-    filterConditions.googleRating = { $gte: parseFloat(googleRating) }; // Ensure googleRating is a number
-  }
-
+// Add movie to watched
+router.post("/add-to-watched/:movieId", protect, async (req, res) => {
   try {
-    // Perform the query with the filter conditions
-    const filteredMovies = await Movie.find(filterConditions);
+    const { movieId } = req.params;
+    const user = req.user;
 
-    if (filteredMovies.length === 0) {
-      return res.status(404).json({ message: "No movies found matching the filter criteria" });
+    // Check if the movie exists
+    const movie = await Movie.findById(movieId);
+    if (!movie) {
+      return res.status(404).json({ message: "Movie not found" });
     }
 
-    // Return the filtered movies
-    res.status(200).json(filteredMovies);
+    // Check if movie is already in watched
+    if (user.watched.includes(movieId)) {
+      return res.status(400).json({ message: "Movie already marked as watched" });
+    }
+
+    // Add the movie to the user's watched list
+    user.watched.push(movieId);
+    await user.save();
+
+    res.status(200).json({ message: "Movie marked as watched" });
   } catch (error) {
-    // Catch any error and send a 500 status code with the error message
-    res.status(500).json({ message: "Error fetching the movie!", error: error.message });
+    handleError(res, error, "Error adding movie to watched list");
+  }
+});
+
+// Get all movies in the watchlist of the logged-in user
+router.get("/watchlist", protect, async (req, res) => {
+  try {
+    const user = req.user;
+    await user.populate("watchlist");
+    res.status(200).json(user.watchlist);
+  } catch (error) {
+    handleError(res, error, "Error fetching watchlist");
+  }
+});
+
+// Get all movies in the favorites list of the logged-in user
+router.get("/favorites", protect, async (req, res) => {
+  try {
+    const user = req.user;
+    await user.populate("favorites");
+    res.status(200).json(user.favorites);
+  } catch (error) {
+    handleError(res, error, "Error fetching favorites");
+  }
+});
+
+// Get all movies in the watched list of the logged-in user
+router.get("/watched", protect, async (req, res) => {
+  try {
+    const user = req.user;
+    await user.populate("watched");
+    res.status(200).json(user.watched);
+  } catch (error) {
+    handleError(res, error, "Error fetching watched movies");
   }
 });
 
