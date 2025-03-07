@@ -1,50 +1,85 @@
-// src/pages/signup.js
-
 import React, { useState } from 'react';
+import { TextField, Button, Container, Box, Typography } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';  // Importing useNavigate for navigation
+import '../Styles/Signup.css';
 
-const Signup = () => {
+const SignupPage = () => {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [errorMessage, setErrorMessage] = useState('');
   const navigate = useNavigate();
 
   const handleSignup = async (e) => {
     e.preventDefault();
 
-    try {
-      await axios.post('http://localhost:5000/api/users/signup', {
-        email,
-        password,
-      });
+    if (!username || !email || !password) {
+      setErrorMessage('Please fill in all fields');
+      return;
+    }
 
-      // After successful signup, navigate to the login page
-      navigate('/login');
+    try {
+      const response = await axios.post('http://localhost:5002/api/auth/signup', { username, email, password });
+      console.log(response.data);
+
+      // Redirect to Login page after successful signup
+      navigate('/Home');
     } catch (error) {
-      console.error('Error signing up:', error);
+      setErrorMessage('Error signing up. Please try again!');
     }
   };
 
   return (
-    <div>
-      <h1>Signup</h1>
-      <form onSubmit={handleSignup}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Signup</button>
-      </form>
-    </div>
+    <Container maxWidth="xs">
+      <Box className="signup-container">
+        <Typography className="signup-heading">Sign Up to Movie App</Typography>
+        <form onSubmit={handleSignup} style={{ width: '100%' }}>
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Username"
+            value={username}
+            onChange={(e) => setUsername(e.target.value)}
+            className="signup-field"
+            autoFocus
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="signup-field"
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="signup-field"
+          />
+          {errorMessage && <Typography className="error-message">{errorMessage}</Typography>}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            className="signup-button"
+          >
+            Sign Up
+          </Button>
+        </form>
+      </Box>
+    </Container>
   );
 };
 
-export default Signup;
+export default SignupPage;

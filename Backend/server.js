@@ -17,8 +17,11 @@ const app = express();
 // Middleware
 app.use(express.json());
 app.use(morgan("dev"));
-app.use(cors());
-
+app.use(cors({
+  origin: 'http://localhost:5173',  // Allow requests from the frontend running on port 5173
+  methods: ['GET', 'POST', 'PUT', 'DELETE'],  // Allow specific HTTP methods
+  credentials: true,  // Allow cookies if needed
+}));
 // Connect to MongoDB
 mongoose
   .connect(process.env.MONGO_URI)

@@ -9,21 +9,27 @@ import AddMovie from '../pages/AddMovies';
 import MovieList from '../pages/Moviedetails';
 import Favorites from '../pages/Favorites';
 import Watchlist from '../pages/Watchlist';
+import Navbar from '../Components/navbar';
+import LoginPage from '../pages/login';
+import Footer from '../Components/Footer';
 
-function App() {
+const App = () => {
   return (
     <Router>
+
+      <Navbar />
+
+
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/add-movie" element={<AddMovie />} />
-        <Route path="/movie-list" element={<MovieList />} />
-        <Route path="/favorites" element={<Favorites />} />
-        <Route path="/watchlist" element={<Watchlist />} />
       </Routes>
+
     </Router>
+
+
   );
-}
+};
 
 export default App;

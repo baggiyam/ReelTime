@@ -1,53 +1,74 @@
-// src/pages/login.js
-
 import React, { useState } from 'react';
+import { TextField, Button, Container, Box, Typography } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
+import '../Styles/Login.css'
 
-const Login = () => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const navigate = useNavigate();
+  const [errorMessage, setErrorMessage] = useState('');
 
   const handleLogin = async (e) => {
     e.preventDefault();
 
+    if (!email || !password) {
+      setErrorMessage('Please enter a valid email and password to Login ');
+      return;
+    }
+
     try {
-      const response = await axios.post('http://localhost:5000/api/users/login', {
-        email,
-        password,
-      });
 
-      // Save the JWT token in local storage
-      localStorage.setItem('token', response.data.token);
+      const response = await axios.post('http://localhost:5002/api/auth/login', { email, password });
+      console.log(response.data);
 
-      // Redirect to the movie list page
-      navigate('/movie-list');
+
+      localStorage.setItem('authToken', response.data.token);
+
     } catch (error) {
-      console.error('Error logging in:', error);
+      setErrorMessage('Invalid email or password');
     }
   };
 
   return (
-    <div>
-      <h1>Login</h1>
-      <form onSubmit={handleLogin}>
-        <input
-          type="email"
-          placeholder="Email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={password}
-          onChange={(e) => setPassword(e.target.value)}
-        />
-        <button type="submit">Login</button>
-      </form>
-    </div>
+    <Container maxWidth="xs">
+      <Box className="login-container">
+        <Typography className="login-heading">Login to Movie App</Typography>
+        <form onSubmit={handleLogin} style={{ width: '100%' }}>
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Email Address"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            className="login-field" // Using the CSS class
+            autoFocus
+          />
+          <TextField
+            variant="outlined"
+            margin="normal"
+            required
+            fullWidth
+            label="Password"
+            type="password"
+            value={password}
+            onChange={(e) => setPassword(e.target.value)}
+            className="login-field" // Using the CSS class
+          />
+          {errorMessage && <Typography className="error-message">{errorMessage}</Typography>}
+          <Button
+            type="submit"
+            fullWidth
+            variant="contained"
+            className="login-button" 
+          >
+            Log In
+          </Button>
+        </form>
+      </Box>
+    </Container>
   );
 };
 
-export default Login;
+export default LoginPage;

@@ -37,6 +37,14 @@ const movieSchema = new mongoose.Schema(
       ref: "User",
       required: true,
     },
+    poster: {
+      type: String, // URL of the movie poster
+      required: true,
+    },
+    trailer: {
+      type: String, // YouTube or other video URL
+      required: true,
+    },
     suggestedToAll: {
       type: Boolean,
       default: true,
