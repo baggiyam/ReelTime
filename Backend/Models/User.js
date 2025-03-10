@@ -28,8 +28,12 @@ role:{
   type:String,
   enum:['admin','user'],
   default:'user',
-}
-
+},
+verificationToken: { type: String },
+verificationTokenExpiration: {
+  type: Date,
+  required: false,
+},
 }
 
 );

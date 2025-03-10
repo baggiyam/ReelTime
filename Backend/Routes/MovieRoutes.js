@@ -33,6 +33,44 @@ router.get("/:id", async (req, res) => {
   }
 });
 
+
+// PUT route to update a movie by ID
+router.put("/:id", async (req, res) => {
+  try {
+    const { id } = req.params; // Extract the movie ID from the URL parameter
+    const { title, description, releaseDate, language, genre, imdbRating, poster, trailer } = req.body; // Extract data from the request body
+
+    // Find the movie by its ID and update it with the new data
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      id, // The ID of the movie to update
+      {
+        title,
+        description,
+        releaseDate,
+        language,
+        genre,
+        imdbRating,
+        poster,
+        trailer
+      }, // The new values to update
+      { new: true } // Return the updated movie instead of the original
+    );
+
+    // If the movie wasn't found, return a 404 error
+    if (!updatedMovie) {
+      return res.status(404).json({ message: "Movie not found" });
+    }
+
+    // If the update is successful, send the updated movie as the response
+    res.status(200).json(updatedMovie);
+  } catch (error) {
+    console.error(error); // Log the error for debugging
+    res.status(500).json({ message: "Server error" }); // Return a 500 error for unexpected issues
+  }
+});
+
+module.exports = router;
+
 // Add movie to the watchlist
 router.post("/add-to-watchlist/:movieId", protect, async (req, res) => {
   try {
