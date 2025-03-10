@@ -121,6 +121,16 @@ router.get("/verify-email/:token", async (req, res) => {
     handleError(res, error, "Error during email verification.");
   }
 });
+router.post("/check-email", async (req, res) => {
+  const { email } = req.body;
+  
+  const user = await User.findOne({ email });
+  if (user) {
+    return res.json({ exists: true });
+  } else {
+    return res.json({ exists: false });
+  }
+});
 
 // 🔹 Login Route
 router.post("/login", async (req, res) => {

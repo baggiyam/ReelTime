@@ -1,16 +1,18 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Box, Typography } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';  // Importing useNavigate for navigation
-import '../Styles/Signup.css';  // Import the CSS file for styling
+import { useNavigate } from 'react-router-dom';
+import '../Styles/Signup.css';
+import { useAuthContext } from '../Components/Authcontext';
 
 const SignupPage = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [signupSuccess, setSignupSuccess] = useState(false);  // New state for success message
+  const [signupSuccess, setSignupSuccess] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuthContext();  // Extract login function from AuthContext
 
   const handleSignup = async (e) => {
     e.preventDefault();
@@ -21,18 +23,29 @@ const SignupPage = () => {
     }
 
     try {
+      // Call the signup API
       const response = await axios.post('http://localhost:5002/api/auth/signup', { username, email, password });
       console.log(response.data);
 
-      // If signup is successful, show the success message
+      // Assuming the response contains the token in response.data.token
+      const { token } = response.data;  // Destructure the token from the response
+
+      // Store the token in localStorage
+      localStorage.setItem('authToken', token);
+
+      // Update the auth state using the login function from AuthContext
+      login(token);  // Assuming login updates the AuthContext state
+
+      // Show success message
       setSignupSuccess(true);
       setErrorMessage('');  // Clear any previous error messages
 
-      // Optional: Redirect to Login page after showing success message
-      // setTimeout(() => navigate('/login'), 5000);  // You can redirect after 5 seconds (if needed)
+      // Optionally, redirect to the homepage after signup
+      setTimeout(() => navigate('/'), 3000);  // Redirect after 3 seconds
+
     } catch (error) {
       setErrorMessage('Error signing up. Please try again!');
-      setSignupSuccess(false);  // If error, make sure success message is not displayed
+      setSignupSuccess(false);
     }
   };
 

@@ -1,14 +1,19 @@
 import React, { useState } from 'react';
 import { TextField, Button, Container, Box, Typography } from '@mui/material';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom'; 
+import { useNavigate } from 'react-router-dom';
+import { useAuthContext } from "../Components/Authcontext"; // Import the AuthContext to manage login
 import '../Styles/Login.css';
 
 const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const navigate = useNavigate();  // Initialize the navigate hook
+  const [isEmailRegistered, setIsEmailRegistered] = useState(true);
+  const navigate = useNavigate();
+
+  // Access the login function from AuthContext
+  const { login } = useAuthContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
@@ -19,18 +24,31 @@ const LoginPage = () => {
     }
 
     try {
-      // Make the API request to login
+      // Check if the email is registered
+      const emailCheckResponse = await axios.post('http://localhost:5002/api/auth/check-email', { email });
+
+      if (!emailCheckResponse.data.exists) {
+        setErrorMessage('Email not found. Please sign up first.');
+        setIsEmailRegistered(false); // When the email is not registered, disable the login flow
+        return;
+      }
+
+      // Make the login request to get the token
       const response = await axios.post('http://localhost:5002/api/auth/login', { email, password });
-      console.log(response.data);  // Log the response for debugging
 
-      // Store the token in localStorage
-      localStorage.setItem('authToken', response.data.token);
+      // Ensure the API returns a token before proceeding
+      if (response.data.token) {
+        // Store the token using the AuthContext login function
+        login(response.data.token);
 
-      // Navigate to the homepage after login
-      navigate('/');  // Redirect to homepage (or wherever you want)
+        // Navigate to the homepage or any other page after login
+        navigate('/'); // Change this to any route you want to redirect after login
+      } else {
+        setErrorMessage('Login failed, please try again.');
+      }
 
     } catch (error) {
-      // Handle login error
+      // Handle login error (e.g., invalid credentials)
       setErrorMessage('Invalid email or password');
     }
   };
@@ -48,7 +66,7 @@ const LoginPage = () => {
             label="Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="login-field" // Using the CSS class
+            className="login-field" // CSS class to style the input fields
             autoFocus
           />
           <TextField
@@ -57,12 +75,16 @@ const LoginPage = () => {
             required
             fullWidth
             label="Password"
-            type="password"  // Change type to 'password' for security reasons
+            type="password" // Change to 'password' to hide the input
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="login-field" // Using the CSS class
+            className="login-field" // CSS class for styling
           />
+
+          {/* Display error message if there's one */}
           {errorMessage && <Typography className="error-message">{errorMessage}</Typography>}
+
+          {/* Button to submit the form */}
           <Button
             type="submit"
             fullWidth
