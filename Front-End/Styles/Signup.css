@@ -1,36 +1,43 @@
+/* General container styling */
 .signup-container {
-    padding: 20px;
-    margin-top: 50px;
-    background-color: #fff;
-    border-radius: 8px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  }
-  
-  .signup-heading {
-    text-align: center;
-    font-size: 24px;
-    margin-bottom: 20px;
-    color: #3f51b5;
-  }
-  
-  .signup-field {
-    margin-bottom: 20px;
-  }
-  
-  .signup-button {
-    background-color: #3f51b5;
-    color: white;
-    margin-top: 20px;
-  }
-  
-  .signup-button:hover {
-    background-color: #283593;
-  }
-  
-  .error-message {
-    color: red;
-    font-size: 14px;
-    text-align: center;
-    margin-top: 10px;
-  }
-  
+  padding: 20px;
+  background-color: #f9f9f9;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+/* Signup form heading */
+.signup-heading {
+  text-align: center;
+  font-size: 24px;
+  font-weight: bold;
+  margin-bottom: 20px;
+}
+
+/* Form fields */
+.signup-field {
+  margin-bottom: 15px;
+}
+
+/* Success message styling */
+.success-message {
+  color: green;
+  text-align: center;
+  margin-top: 20px;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+/* Error message styling */
+.error-message {
+  color: red;
+  text-align: center;
+  margin-top: 10px;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+/* Signup button styling */
+.signup-button {
+  margin-top: 20px;
+}

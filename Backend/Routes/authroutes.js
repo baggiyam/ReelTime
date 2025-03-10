@@ -23,9 +23,9 @@ const transporter = nodemailer.createTransport({
 // ✅ Test Transporter Connection
 transporter.verify((error, success) => {
   if (error) {
-    console.error("❌ Email server error:", error);
+    console.error("Email server error:", error);
   } else {
-    console.log("✅ Email server is ready to send messages");
+    console.log("Email server is ready to send messages");
   }
 });
 
@@ -62,8 +62,9 @@ router.post("/signup", async (req, res) => {
     await newUser.save();
 
     // ✅ Corrected Verification URL
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173"; // Default to frontend URL
-    const verificationUrl = `${clientUrl}/verify-email/${verificationToken}`;
+    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
+    const verificationUrl = `${clientUrl}`;
+
 
     // Mail options for the verification email
     const mailOptions = {
