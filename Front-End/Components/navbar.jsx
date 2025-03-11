@@ -61,6 +61,12 @@ function Navbar({ token, handleLogout }) {
                         >
                             Watched
                         </NavLink>
+                        <NavLink
+                            to="/AddMovies"
+                            className={({ isActive }) => (isActive ? "nav-link active-link" : "nav-link")}
+                        >
+                            AddMovies
+                        </NavLink>
 
                         {/* Add Logout button if token exists */}
                         <button

@@ -1,4 +1,10 @@
 /* Ensure the hero-banner is full width and covers the background */
+.Homepage {
+    text-align: center;
+    padding: 20px;
+    background-color: #121212;
+    color: white;
+  }
 .hero-banner {
     position: relative;
     height: 500px;

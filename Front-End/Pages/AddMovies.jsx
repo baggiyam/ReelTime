@@ -1,103 +1,84 @@
-// src/pages/AddMovies.js
+import React, { useState } from "react";
+import axios from "axios";
+import "../Styles/MovieList.css"; // Using the existing movie list CSS
 
-import React, { useState } from 'react';
-import axiosInstance from '../src/utils/axios'
+const AddMoviePage = ({ token }) => {
+    const [formData, setFormData] = useState({
+        title: "",
+        description: "",
+        releaseDate: "",
+        language: "",
+        genre: "",
+        imdbRating: "",
+        googleRating: "",
+        poster: "",
+        trailer: "",
+        suggestedToAll: true,
+    });
 
-const AddMovie = () => {
-    const [title, setTitle] = useState('');
-    const [description, setDescription] = useState('');
-    const [releaseDate, setReleaseDate] = useState('');
-    const [language, setLanguage] = useState('');
-    const [genre, setGenre] = useState('');
-    const [imdbRating, setImdbRating] = useState('');
-    const [googleRating, setGoogleRating] = useState('');
-    const [posterImage, setPosterImage] = useState('');
-    const [trailerLink, setTrailerLink] = useState('');
+    const [popupMessage, setPopupMessage] = useState("");
+    const [popupVisible, setPopupVisible] = useState(false);
 
-    const handleAddMovie = async (e) => {
+    const showPopup = (message) => {
+        setPopupMessage(message);
+        setPopupVisible(true);
+        setTimeout(() => setPopupVisible(false), 3000);
+    };
+
+    const handleChange = (e) => {
+        const { name, value, type, checked } = e.target;
+        setFormData({
+            ...formData,
+            [name]: type === "checkbox" ? checked : value,
+        });
+    };
+
+    const handleSubmit = async (e) => {
         e.preventDefault();
-
-        const movieData = {
-            title,
-            description,
-            releaseDate,
-            language,
-            genre,
-            imdbRating,
-            googleRating,
-            posterImage,
-            trailerLink,
-        };
-
         try {
-            await axiosInstance.post('/movies', movieData);
-            alert('Movie added successfully!');
+            const response = await axios.post("http://localhost:5002/api/movies", formData, {
+                headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
+            });
+            showPopup("Movie added successfully!");
+            setFormData({
+                title: "",
+                description: "",
+                releaseDate: "",
+                language: "",
+                genre: "",
+                imdbRating: "",
+                googleRating: "",
+                poster: "",
+                trailer: "",
+                suggestedToAll: true,
+            });
         } catch (error) {
-            console.error('Error adding movie:', error);
+            showPopup("Failed to add movie. Try again.");
         }
     };
 
     return (
-        <div>
-            <h1>Add Movie</h1>
-            <form onSubmit={handleAddMovie}>
-                <input
-                    type="text"
-                    placeholder="Title"
-                    value={title}
-                    onChange={(e) => setTitle(e.target.value)}
-                />
-                <textarea
-                    placeholder="Description"
-                    value={description}
-                    onChange={(e) => setDescription(e.target.value)}
-                />
-                <input
-                    type="date"
-                    placeholder="Release Date"
-                    value={releaseDate}
-                    onChange={(e) => setReleaseDate(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Language"
-                    value={language}
-                    onChange={(e) => setLanguage(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Genre"
-                    value={genre}
-                    onChange={(e) => setGenre(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="IMDB Rating"
-                    value={imdbRating}
-                    onChange={(e) => setImdbRating(e.target.value)}
-                />
-                <input
-                    type="number"
-                    placeholder="Google Rating"
-                    value={googleRating}
-                    onChange={(e) => setGoogleRating(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Poster Image URL"
-                    value={posterImage}
-                    onChange={(e) => setPosterImage(e.target.value)}
-                />
-                <input
-                    type="text"
-                    placeholder="Trailer Link"
-                    value={trailerLink}
-                    onChange={(e) => setTrailerLink(e.target.value)}
-                />
+        <div className="movie-list-page">
+            <h1>Add a Movie</h1>
+            {popupVisible && <div className="popup">{popupMessage}</div>}
+            <form onSubmit={handleSubmit} className="movie-form">
+                <input type="text" name="title" value={formData.title} onChange={handleChange} placeholder="Title" required />
+                <textarea name="description" value={formData.description} onChange={handleChange} placeholder="Description" required />
+                <input type="date" name="releaseDate" value={formData.releaseDate} onChange={handleChange} required />
+                <input type="text" name="language" value={formData.language} onChange={handleChange} placeholder="Language" required />
+                <input type="text" name="genre" value={formData.genre} onChange={handleChange} placeholder="Genre" required />
+                <input type="number" name="imdbRating" value={formData.imdbRating} onChange={handleChange} placeholder="IMDB Rating (0-10)" min="0" max="10" required />
+                <input type="number" name="googleRating" value={formData.googleRating} onChange={handleChange} placeholder="Google Rating (0-10)" min="0" max="10" required />
+                <input type="url" name="poster" value={formData.poster} onChange={handleChange} placeholder="Poster URL" required />
+                <input type="url" name="trailer" value={formData.trailer} onChange={handleChange} placeholder="Trailer URL" required />
+                <label>
+                    <input type="checkbox" name="suggestedToAll" checked={formData.suggestedToAll} onChange={handleChange} />
+                    Suggest to All Users
+                </label>
                 <button type="submit">Add Movie</button>
             </form>
         </div>
     );
 };
 
-export default AddMovie;
+export default AddMoviePage;

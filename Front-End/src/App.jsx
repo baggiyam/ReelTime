@@ -5,11 +5,11 @@ import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import Home from '../pages/home';
 import Login from '../pages/login';
 import Signup from '../pages/signup';
-import AddMovie from '../pages/AddMovies';
-import MovieList from '../pages/Movielist';
-import Favorites from '../pages/Favorites';
-import Watchlist from '../pages/Watchlist';
-import Watched from '../pages/Watched'; // Import Watched Page
+import AddMoviePage from '../pages/AddMovies';
+import MovieListPage from '../pages/Movielist';
+import FavoritesPage from '../pages/Favorites';
+import WatchlistPage from "../pages/WatchList";
+import WatchedPage from "../pages/watched"
 import Navbar from '../Components/navbar';
 import Footer from '../Components/Footer';
 
@@ -32,23 +32,19 @@ const App = () => {
 
   return (
     <Router>
-      {/* Pass token and handleLogout to Navbar */}
       <Navbar token={token} handleLogout={handleLogout} />
-
       <Routes>
         <Route path="/" element={<Home />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/movielist" element={<MovieList token={token} />} />
-        <Route path="/watchlist" element={<Watchlist token={token} />} />
-        <Route path="/favorites" element={<Favorites token={token} />} />
-        <Route path="/watched" element={<Watched token={token} />} />
-        <Route path="/addmovie" element={<AddMovie />} /> {/* Assuming AddMovie page exists */}
+        <Route path="/movielist" element={<MovieListPage token={token} />} />
+        <Route path="/watchlist" element={<WatchlistPage token={token} />} />
+        <Route path="/favorites" element={<FavoritesPage token={token} />} />
+        <Route path="/watched" element={<WatchedPage token={token} />} />
+        <Route path="/addmovie" element={<AddMoviePage />} />
       </Routes>
-
       <Footer />
     </Router>
   );
 };
-
 export default App;

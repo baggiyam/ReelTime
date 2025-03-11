@@ -31,7 +31,7 @@ const Home = () => {
     }, [movies]);
 
     return (
-        <div>
+        <div className="Homepage">
             <div
                 className="hero-banner"
                 style={{ backgroundImage: `url(${movies[index]?.poster})` }}>
@@ -46,8 +46,9 @@ const Home = () => {
                 </div>
             </div>
 
+
             {/* Movie List Section */}
-            <section className="movie-list-section">
+            <section className="movie-list-section Homepage">
                 <h2>Latest Movies</h2>
                 <div className="movie-list">
                     {movies.length > 0 ? (
@@ -70,6 +71,7 @@ const Home = () => {
                 </div>
             </section>
         </div>
+
     );
 };
 
