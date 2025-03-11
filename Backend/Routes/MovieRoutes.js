@@ -69,8 +69,6 @@ router.put("/:id", async (req, res) => {
   }
 });
 
-module.exports = router;
-
 // Add movie to the watchlist
 router.post("/add-to-watchlist/:movieId", protect, async (req, res) => {
   try {
@@ -138,12 +136,12 @@ router.post("/add-to-watched/:movieId", protect, async (req, res) => {
     }
 
     // Check if movie is already in watched
-    if (user.watched.includes(movieId)) {
+    if (user.watchedMovies.includes(movieId)) {
       return res.status(400).json({ message: "Movie already marked as watched" });
     }
 
     // Add the movie to the user's watched list
-    user.watched.push(movieId);
+    user.watchedMovies.push(movieId);
     await user.save();
 
     res.status(200).json({ message: "Movie marked as watched" });

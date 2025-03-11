@@ -29,11 +29,15 @@ role:{
   enum:['admin','user'],
   default:'user',
 },
-verificationToken: { type: String },
+verificationToken: { type: Number },
 verificationTokenExpiration: {
   type: Date,
   required: false,
 },
+isVerified:{
+  type:Boolean,
+  default:false,
+}
 }
 
 );

@@ -5,10 +5,13 @@ import "../Styles/movielist.css"; // You can reuse this CSS for styling
 
 const Watchlist = ({ token }) => {
     const [watchlistMovies, setWatchlistMovies] = useState([]);
+    const [errorMessage, setErrorMessage] = useState("");
     const navigate = useNavigate();
 
+    console.log("token is passed :", token);
     useEffect(() => {
         if (!token) {
+            setErrorMessage("You need to be logged in to view your watchlist.");
             return;
         }
 
@@ -18,16 +21,23 @@ const Watchlist = ({ token }) => {
                 headers: { Authorization: `Bearer ${token}` },
             })
             .then((response) => {
+                console.log(response.data);
                 setWatchlistMovies(response.data);
+                setErrorMessage("");
             })
             .catch((error) => {
                 console.error("Error fetching watchlist movies:", error);
+                setErrorMessage("Failed to load your watchlist. Please try again.");
             });
     }, [token]);
 
     return (
         <div className="movie-list-page">
             <h1>Your Watchlist</h1>
+
+            {/* Display error message if there's an error */}
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+
             <div className="movie-list">
                 {watchlistMovies.length > 0 ? (
                     watchlistMovies.map((movie) => (

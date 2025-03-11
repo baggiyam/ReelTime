@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -9,12 +10,12 @@ const MovieList = ({ token }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Fetch all movies from API
+ 
     axios
       .get("http://localhost:5002/api/movies/")
       .then((response) => {
-        console.log("Movies loaded:", response.data);  // Check the API response
-        setMovies(response.data);  // Set the movies to the state
+        console.log("Movies loaded:", response.data); 
+        setMovies(response.data);  
       })
       .catch((error) => {
         console.error("Error fetching movies:", error);

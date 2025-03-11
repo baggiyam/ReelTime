@@ -1,113 +1,133 @@
-import React, { useState } from 'react';
-import { TextField, Button, Container, Box, Typography } from '@mui/material';
-import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
-import '../Styles/Signup.css';
-import { useAuthContext } from '../Components/Authcontext';
+import React, { useState } from "react";
+import axios from "axios";
+import { useNavigate } from "react-router-dom";
+import "../Styles/Signup.css";
 
-const SignupPage = () => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [signupSuccess, setSignupSuccess] = useState(false);
+const Signup = ({ setToken }) => {
+  const [formData, setFormData] = useState({
+    username: "",
+    email: "",
+    password: "",
+  });
+
+  const [verificationCode, setVerificationCode] = useState("");
+  const [message, setMessage] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [isVerifying, setIsVerifying] = useState(false);
+
   const navigate = useNavigate();
-  const { login } = useAuthContext();  // Extract login function from AuthContext
+  const handleChange = (e) => {
+    setFormData({ ...formData, [e.target.name]: e.target.value });
+  };
 
-  const handleSignup = async (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-
-    if (!username || !email || !password) {
-      setErrorMessage('Please fill in all fields');
-      return;
-    }
+    setLoading(true);
+    setMessage("");
 
     try {
-      // Call the signup API
-      const response = await axios.post('http://localhost:5002/api/auth/signup', { username, email, password });
-      console.log(response.data);
-
-      // Assuming the response contains the token in response.data.token
-      const { token } = response.data;  // Destructure the token from the response
-
-      // Store the token in localStorage
-      localStorage.setItem('authToken', token);
-
-      // Update the auth state using the login function from AuthContext
-      login(token);  // Assuming login updates the AuthContext state
-
-      // Show success message
-      setSignupSuccess(true);
-      setErrorMessage('');  // Clear any previous error messages
-
-      // Optionally, redirect to the homepage after signup
-      setTimeout(() => navigate('/'), 3000);  // Redirect after 3 seconds
-
+      const res = await axios.post("http://localhost:5002/api/auth/signup", formData);
+      console.log("Signup response:", res.data);
+      setMessage("Verification code sent to your email.");
+      setIsVerifying(true);
     } catch (error) {
-      setErrorMessage('Error signing up. Please try again!');
-      setSignupSuccess(false);
+      setMessage(error.response?.data?.message || "Something went wrong!");
+    } finally {
+      setLoading(false);
     }
   };
 
-  return (
-    <Container maxWidth="xs">
-      <Box className="signup-container">
-        <Typography className="signup-heading">Sign Up to Movie App</Typography>
+  const handleVerify = async (e) => {
+    e.preventDefault();
+    setLoading(true);
+    setMessage("");
+    try {
+      const res = await axios.post("http://localhost:5002/api/auth/verification", {
+        email: formData.email,
+        verificationCode,
+      });
+      console.log("Full response:", res);
+      setMessage(res.data.message);
+      if (res.data.token) {
+        localStorage.setItem('authToken', res.data.token);
+        const savedToken = localStorage.getItem('authToken');
+        setToken(res.data.token);
+        console.log("Token saved to localStorage:", savedToken);
 
-        {/* Show Success Message after signup */}
-        {signupSuccess ? (
-          <Typography variant="h6" color="primary" align="center" className="success-message">
-            Signup successful! Please check your email to verify your account. <br />
-            If you don’t see the email, please check your spam folder.
-          </Typography>
-        ) : (
-          <form onSubmit={handleSignup} style={{ width: '100%' }}>
-            <TextField
-              variant="outlined"
-              margin="normal"
+        setIsVerifying(false);
+        setFormData({
+          username: "",
+          email: "",
+          password: "",
+        });
+        setVerificationCode("");
+      }
+
+
+    } catch (error) {
+      setMessage(error.response?.data?.message || "Verification failed!");
+    }
+    navigate("/", { state: { message: "Verification successful!" } });
+    window.location.reload();
+  };
+
+  return (
+    <div className="signup-container">
+      <div className="signup-box">
+        <h2>Signup</h2>
+        {message && <p className="message">{message}</p>}
+        {!isVerifying ? (
+          <form onSubmit={handleSubmit}>
+            <input
+              type="text"
+              name="username"
+              placeholder="Username"
+              value={formData.username}
+              onChange={handleChange}
               required
-              fullWidth
-              label="Username"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              className="signup-field"
-              autoFocus
+              className="input-field"
             />
-            <TextField
-              variant="outlined"
-              margin="normal"
+            <input
+              type="email"
+              name="email"
+              placeholder="Email"
+              value={formData.email}
+              onChange={handleChange}
               required
-              fullWidth
-              label="Email Address"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              className="signup-field"
+              className="input-field"
             />
-            <TextField
-              variant="outlined"
-              margin="normal"
-              required
-              fullWidth
-              label="Password"
+            <input
               type="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              className="signup-field"
+              name="password"
+              placeholder="Password"
+              value={formData.password}
+              onChange={handleChange}
+              required
+              className="input-field"
             />
-            {errorMessage && <Typography className="error-message">{errorMessage}</Typography>}
-            <Button
-              type="submit"
-              fullWidth
-              variant="contained"
-              className="signup-button"
-            >
-              Sign Up
-            </Button>
+            <button type="submit" disabled={loading} className="signup-button">
+              {loading ? "Signing up..." : "Sign Up"}
+            </button>
+          </form>
+        ) : (
+          <form onSubmit={handleVerify}>
+            <input
+              type="text"
+              name="verificationCode"
+              placeholder="Enter verification code"
+              value={verificationCode}
+              onChange={(e) => setVerificationCode(e.target.value)}
+              required
+              className="input-field"
+            />
+            <button type="submit" disabled={loading} className="signup-button">
+              {loading ? "Verifying..." : "Verify"}
+            </button>
           </form>
         )}
-      </Box>
-    </Container>
+      </div>
+    </div>
   );
 };
 
-export default SignupPage;
+export default Signup;

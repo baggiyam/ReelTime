@@ -4,23 +4,20 @@ const jwt = require("jsonwebtoken");
 const mongoose = require("mongoose");
 const router = express.Router();
 const User = require("../Models/User.js");
-const handleError = require("../utils/errorHandler.js");
 const nodemailer = require("nodemailer");
-const crypto = require("crypto");
 require("dotenv").config(); // Load environment variables
 
 // Configure Nodemailer with SMTP
 const transporter = nodemailer.createTransport({
   host: "smtp.gmail.com",
   port: 587,
-  secure: false, // TLS requires false, SSL requires true
+  secure: false,  // TLS
   auth: {
-    user: process.env.ADMIN_EMAIL,
-    pass: process.env.ADMIN_EMAIL_PASSWORD,
+    user: process.env.ADMIN_EMAIL,  // Gmail email
+    pass: process.env.ADMIN_EMAIL_PASSWORD,  // Gmail app password
   },
 });
 
-// ✅ Test Transporter Connection
 transporter.verify((error, success) => {
   if (error) {
     console.error("Email server error:", error);
@@ -29,26 +26,26 @@ transporter.verify((error, success) => {
   }
 });
 
-// 🔹 Signup Route with Email Verification
+// Signup Route with Email Verification
 router.post("/signup", async (req, res) => {
   const { username, email, password } = req.body;
 
   try {
-    // Check if the user already exists
+    // Check if user already exists
     const existingUser = await User.findOne({ email });
     if (existingUser) {
       return res.status(400).json({ message: "User already exists!" });
     }
 
-    // Hash password before saving
+    // Hash the password before saving to the database
     const salt = await bcrypt.genSalt(10);
     const hashedPassword = await bcrypt.hash(password, salt);
 
-    // Generate a unique verification token
-    const verificationToken = crypto.randomBytes(32).toString("hex");
+    // Generate a verification token (4 digits) and set an expiration
+    const verificationToken = Math.floor(1000 + Math.random() * 9000);
     const verificationTokenExpiration = Date.now() + 24 * 60 * 60 * 1000; // 24 hours expiry
 
-    // Create a new user object
+    // Create the new user object
     const newUser = new User({
       username,
       email,
@@ -61,26 +58,21 @@ router.post("/signup", async (req, res) => {
     // Save the user to the database
     await newUser.save();
 
-    // ✅ Corrected Verification URL
-    const clientUrl = process.env.CLIENT_URL || "http://localhost:5173";
-    const verificationUrl = `${clientUrl}`;
-
-
     // Mail options for the verification email
     const mailOptions = {
       from: `"ReelTime Team" <${process.env.ADMIN_EMAIL}>`,
       to: email,
       subject: "Email Verification",
-      text: `Hello ${username},\n\nPlease verify your email by clicking on the following link:\n\n${verificationUrl}\n\nBest Regards,\nReelTime Team`,
+      text: `Hello ${username},\n\nPlease enter this verification code on the website: \n\n${verificationToken}\n\nBest Regards,\nReelTime Team`,
       replyTo: process.env.ADMIN_EMAIL,
     };
 
     // Send the verification email
     try {
       const info = await transporter.sendMail(mailOptions);
-      console.log("✅ Verification email sent:", info.response);
+      console.log("Verification email sent:", info.response);
       res.status(200).json({
-        message: "Signup successful! Please check your email to verify your account.",
+        message: "Signup successful!.",
       });
     } catch (emailError) {
       console.error("❌ Error sending email:", emailError);
@@ -88,80 +80,76 @@ router.post("/signup", async (req, res) => {
     }
 
   } catch (error) {
-    handleError(res, error, "Server error during signup");
+    res.status(500).json({ message: "Server error during signup", error: error.message });
   }
 });
 
-// 🔹 Email Verification Route
-router.get("/verify-email/:token", async (req, res) => {
-  const { token } = req.params;
-
+router.post("/verification", async (req, res) => {
+  const { email, verificationCode } = req.body;
+  console.log(req.body);
   try {
-    // Find the user by verification token
-    const user = await User.findOne({ verificationToken: token });
-    if (!user) {
-      return res.status(400).json({ message: "Invalid or expired verification token." });
-    }
-
-    // Check if the token has expired
-    if (user.verificationTokenExpiration < Date.now()) {
-      return res.status(400).json({ message: "Verification token has expired." });
-    }
-
-    // Mark the user as verified
-    user.isVerified = true;
-    user.verificationToken = null; // Remove the token after successful verification
-    user.verificationTokenExpiration = null; // Remove expiration date
-
-    // Save the user after marking it as verified
-    await user.save();
-
-    res.status(200).json({ message: "Email verified successfully! You can now log in." });
-  } catch (error) {
-    handleError(res, error, "Error during email verification.");
-  }
-});
-router.post("/check-email", async (req, res) => {
-  const { email } = req.body;
-  
-  const user = await User.findOne({ email });
-  if (user) {
-    return res.json({ exists: true });
-  } else {
-    return res.json({ exists: false });
-  }
-});
-
-// 🔹 Login Route
-router.post("/login", async (req, res) => {
-  const { email, password } = req.body;
-
-  try {
-    // Find the user by email
     const user = await User.findOne({ email });
+
     if (!user) {
       return res.status(400).json({ message: "User not found!" });
     }
 
-    // Check if the user is verified
+    // Convert the provided verification code to a number for comparison
+    if (user.verificationToken !== Number(verificationCode)) {
+      return res.status(400).json({ message: "Invalid verification code!" });
+    }
+
+    if (user.verificationTokenExpiration < Date.now()) {
+      return res.status(400).json({ message: "Verification code has expired!" });
+    }
+
+    user.isVerified = true;
+    user.verificationToken = null;
+    user.verificationTokenExpiration = null; 
+    await user.save();
+
+    const token = jwt.sign(
+      { email: user.email, userId: user._id }, // Payload: email and userId
+      'your_secret_key', // Secret key for signing the JWT (you should store this securely)
+      { expiresIn: '1h' } // Token expiration (optional)
+    );
+
+    return res.status(200).json({
+      message: "Verification successful!",
+      token: token 
+    });
+  } catch (error) {
+    console.error(error);
+    return res.status(500).json({ message: "Server error!" });
+  }
+});
+
+// Login Route
+router.post("/login", async (req, res) => {
+  const { email, password } = req.body;
+
+  try {
+    const user = await User.findOne({ email });
+    if (!user) {
+      return res.status(400).json({ message: "The email is not yet registered. Please sign up." });
+    }
+
     if (!user.isVerified) {
       return res.status(400).json({ message: "Please verify your email before logging in." });
     }
 
-    // Check if the password is correct
     const isPasswordValid = await bcrypt.compare(password, user.password);
     if (!isPasswordValid) {
       return res.status(400).json({ message: "Invalid credentials!" });
     }
 
-    // Create a JWT token
     const token = jwt.sign({ userId: user._id }, process.env.JWT_SECRET, {
-      expiresIn: "1h", // Token expires in 1 hour
+      expiresIn: "24h",
     });
 
     res.status(200).json({
       message: "Login successful!",
-      token, // Return the JWT token to the client
+      token,
     });
   } catch (error) {
     res.status(500).json({ message: "Server error!", error: error.message });

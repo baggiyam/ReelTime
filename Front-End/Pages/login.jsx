@@ -2,54 +2,43 @@ import React, { useState } from 'react';
 import { TextField, Button, Container, Box, Typography } from '@mui/material';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import { useAuthContext } from "../Components/Authcontext"; // Import the AuthContext to manage login
 import '../Styles/Login.css';
 
-const LoginPage = () => {
+const LoginPage = ({ setToken }) => {  // ✅ Make sure setToken is received as a prop if needed
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
-  const [isEmailRegistered, setIsEmailRegistered] = useState(true);
   const navigate = useNavigate();
-
-  // Access the login function from AuthContext
-  const { login } = useAuthContext();
 
   const handleLogin = async (e) => {
     e.preventDefault();
+    setErrorMessage("");
 
     if (!email || !password) {
-      setErrorMessage('Please enter a valid email and password to Login');
+      setErrorMessage('Please enter both email and password.');
       return;
     }
 
     try {
-      // Check if the email is registered
-      const emailCheckResponse = await axios.post('http://localhost:5002/api/auth/check-email', { email });
+      const response = await axios.post('http://localhost:5002/api/auth/login', { email, password });
 
-      if (!emailCheckResponse.data.exists) {
-        setErrorMessage('Email not found. Please sign up first.');
-        setIsEmailRegistered(false); // When the email is not registered, disable the login flow
+      console.log("This is the token:", response.data.token); // ✅ Corrected log message
+
+      if (response.data.token) {
+        localStorage.setItem('authToken', response.data.token);
+        if (setToken) {
+          setToken(response.data.token);
+        }
+      } else {
+        setErrorMessage("Login successful, but token not received!");
         return;
       }
 
-      // Make the login request to get the token
-      const response = await axios.post('http://localhost:5002/api/auth/login', { email, password });
-
-      // Ensure the API returns a token before proceeding
-      if (response.data.token) {
-        // Store the token using the AuthContext login function
-        login(response.data.token);
-
-        // Navigate to the homepage or any other page after login
-        navigate('/'); // Change this to any route you want to redirect after login
-      } else {
-        setErrorMessage('Login failed, please try again.');
-      }
+      navigate("/");
+      window.location.reload(); 
 
     } catch (error) {
-      // Handle login error (e.g., invalid credentials)
-      setErrorMessage('Invalid email or password');
+      setErrorMessage(error.response?.data?.message || "Login failed! Please try again."); // ✅ Added fallback error message
     }
   };
 
@@ -66,7 +55,7 @@ const LoginPage = () => {
             label="Email Address"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            className="login-field" // CSS class to style the input fields
+            className="login-field"
             autoFocus
           />
           <TextField
@@ -75,22 +64,15 @@ const LoginPage = () => {
             required
             fullWidth
             label="Password"
-            type="password" // Change to 'password' to hide the input
+            type="password"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
-            className="login-field" // CSS class for styling
+            className="login-field"
           />
 
-          {/* Display error message if there's one */}
           {errorMessage && <Typography className="error-message">{errorMessage}</Typography>}
 
-          {/* Button to submit the form */}
-          <Button
-            type="submit"
-            fullWidth
-            variant="contained"
-            className="login-button"
-          >
+          <Button type="submit" fullWidth variant="contained" className="login-button">
             Log In
           </Button>
         </form>

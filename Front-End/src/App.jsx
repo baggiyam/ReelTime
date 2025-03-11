@@ -14,24 +14,26 @@ import Navbar from '../Components/navbar';
 import Footer from '../Components/Footer';
 
 const App = () => {
-  // Store the token in state (could come from localStorage or a context if you're using one)
+
   const [token, setToken] = useState(null);
 
+  // UseEffect to load token from localStorage on page load
   useEffect(() => {
-    const storedToken = localStorage.getItem('token'); // Retrieve token from localStorage (if stored)
+    const storedToken = localStorage.getItem('authToken'); // Consistent key for token
     if (storedToken) {
-      setToken(storedToken);
+      setToken(storedToken); // Set token in state
     }
-  }, []);
+  }, [token]);
 
   const handleLogout = () => {
-    localStorage.removeItem('token'); // Remove token from localStorage
-    setToken(null); // Reset state
+    localStorage.removeItem('authToken'); // Remove token correctly from localStorage
+    setToken(null); // Reset token state
   };
 
   return (
     <Router>
-      <Navbar searchTerm="" onSearchChange={() => { }} /> {/* Pass actual search props if necessary */}
+      {/* Pass token and handleLogout to Navbar */}
+      <Navbar token={token} handleLogout={handleLogout} />
 
       <Routes>
         <Route path="/" element={<Home />} />
