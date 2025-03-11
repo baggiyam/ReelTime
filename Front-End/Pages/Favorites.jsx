@@ -1,51 +1,38 @@
+// FavoritesPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "../Styles/movielist.css";
+import "../Styles/Favorites.css";
 
-const Favorites = ({ token }) => {
-    const [favoriteMovies, setFavoriteMovies] = useState([]);
-    const navigate = useNavigate();
+const FavoritesPage = ({ token }) => {
+  const [favorites, setFavorites] = useState([]);
 
-    useEffect(() => {
-        if (!token) {
-            return;
-        }
+  useEffect(() => {
+    axios.get("http://localhost:5002/api/favorites", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((response) => setFavorites(response.data))
+      .catch(() => console.log("Failed to load favorites."));
+  }, [token]);
 
-        // Fetch the favorite movies for the logged-in user
-        axios
-            .get("http://localhost:5002/api/movies/favorites", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((response) => {
-                setFavoriteMovies(response.data);
-            })
-            .catch((error) => {
-                console.error("Error fetching favorite movies:", error);
-            });
-    }, [token]);
-
-    return (
-        <div className="movie-list-page">
-            <h1>Your Favorites</h1>
-            <div className="movie-list">
-                {favoriteMovies.length > 0 ? (
-                    favoriteMovies.map((movie) => (
-                        <div key={movie._id} className="movie-card">
-                            <img src={movie.poster} alt={movie.title} />
-                            <div className="movie-info">
-                                <h3>{movie.title}</h3>
-                                <p>{movie.genre}</p>
-                                <p>{movie.language}</p>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p>No movies in your favorites</p>
-                )}
+  return (
+    <div className="favorites-page">
+      <h1>My Favorites</h1>
+      <div className="movie-list">
+        {favorites.length > 0 ? (
+          favorites.map((movie) => (
+            <div key={movie._id} className="movie-card">
+              <img src={movie.poster} alt={movie.title} />
+              <div className="movie-info">
+                <h3>{movie.title}</h3>
+              </div>
             </div>
-        </div>
-    );
+          ))
+        ) : (
+          <p>No favorite movies added yet.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
-export default Favorites;
+export default FavoritesPage;

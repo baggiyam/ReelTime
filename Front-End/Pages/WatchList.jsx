@@ -1,61 +1,59 @@
+// WatchlistPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import "../Styles/movielist.css"; // You can reuse this CSS for styling
+import "../Styles/WatchList.css";
 
-const Watchlist = ({ token }) => {
-    const [watchlistMovies, setWatchlistMovies] = useState([]);
-    const [errorMessage, setErrorMessage] = useState("");
-    const navigate = useNavigate();
+const WatchlistPage = ({ token }) => {
+  const [watchlist, setWatchlist] = useState([]);
+  const [popupMessage, setPopupMessage] = useState("");
+  const [popupVisible, setPopupVisible] = useState(false);
 
-    console.log("token is passed :", token);
-    useEffect(() => {
-        if (!token) {
-            setErrorMessage("You need to be logged in to view your watchlist.");
-            return;
-        }
+  useEffect(() => {
+    axios.get("http://localhost:5002/api/watchlist", {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then((response) => setWatchlist(response.data))
+      .catch(() => setPopupMessage("Failed to load watchlist."));
+  }, [token]);
 
-        // Fetch the watchlist for the logged-in user
-        axios
-            .get("http://localhost:5002/api/movies/watchlist", {
-                headers: { Authorization: `Bearer ${token}` },
-            })
-            .then((response) => {
-                console.log(response.data);
-                setWatchlistMovies(response.data);
-                setErrorMessage("");
-            })
-            .catch((error) => {
-                console.error("Error fetching watchlist movies:", error);
-                setErrorMessage("Failed to load your watchlist. Please try again.");
-            });
-    }, [token]);
+  const showPopup = (message) => {
+    setPopupMessage(message);
+    setPopupVisible(true);
+    setTimeout(() => setPopupVisible(false), 3000);
+  };
 
-    return (
-        <div className="movie-list-page">
-            <h1>Your Watchlist</h1>
+  const removeFromWatchlist = (movieId) => {
+    axios.delete(`http://localhost:5002/api/watchlist/${movieId}`, {
+      headers: { Authorization: `Bearer ${token}` }
+    })
+      .then(() => {
+        setWatchlist(watchlist.filter(movie => movie._id !== movieId));
+        showPopup("Removed from Watchlist!");
+      })
+      .catch(() => showPopup("Action failed. Try again."));
+  };
 
-            {/* Display error message if there's an error */}
-            {errorMessage && <p className="error-message">{errorMessage}</p>}
-
-            <div className="movie-list">
-                {watchlistMovies.length > 0 ? (
-                    watchlistMovies.map((movie) => (
-                        <div key={movie._id} className="movie-card">
-                            <img src={movie.poster} alt={movie.title} />
-                            <div className="movie-info">
-                                <h3>{movie.title}</h3>
-                                <p>{movie.genre}</p>
-                                <p>{movie.language}</p>
-                            </div>
-                        </div>
-                    ))
-                ) : (
-                    <p>No movies in your watchlist</p>
-                )}
+  return (
+    <div className="watchlist-page">
+      <h1>My Watchlist</h1>
+      {popupVisible && <div className="popup">{popupMessage}</div>}
+      <div className="movie-list">
+        {watchlist.length > 0 ? (
+          watchlist.map((movie) => (
+            <div key={movie._id} className="movie-card">
+              <img src={movie.poster} alt={movie.title} />
+              <div className="movie-info">
+                <h3>{movie.title}</h3>
+                <button onClick={() => removeFromWatchlist(movie._id)}>Remove</button>
+              </div>
             </div>
-        </div>
-    );
+          ))
+        ) : (
+          <p>No movies in your watchlist.</p>
+        )}
+      </div>
+    </div>
+  );
 };
 
-export default Watchlist;
+export default WatchlistPage;

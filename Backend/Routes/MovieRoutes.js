@@ -15,13 +15,13 @@ router.get("/", async (req, res) => {
 });
 router.get("/:id", async (req, res) => {
   try {
-    // Extract movie ID from URL parameters
+   
     const { id } = req.params;
 
-    // Find the movie by its ID in the database
+
     const movie = await Movie.findById(id);
 
-    // If movie is not found, return an error response
+
     if (!movie) {
       return res.status(404).json({ message: "Movie not found" });
     }
@@ -34,10 +34,10 @@ router.get("/:id", async (req, res) => {
 });
 
 
-// PUT route to update a movie by ID
+
 router.put("/:id", async (req, res) => {
   try {
-    const { id } = req.params; // Extract the movie ID from the URL parameter
+    const { id } = req.params; 
     const { title, description, releaseDate, language, genre, imdbRating, poster, trailer } = req.body; // Extract data from the request body
 
     // Find the movie by its ID and update it with the new data
@@ -154,8 +154,8 @@ router.post("/add-to-watched/:movieId", protect, async (req, res) => {
 router.get("/watchlist", protect, async (req, res) => {
   try {
     const user = req.user;
-    await user.populate("watchlist");
-    res.status(200).json(user.watchlist);
+    const populatedUser = await User.findById(user._id).populate("watchlist");
+    res.status(200).json(populatedUser.watchlist);
   } catch (error) {
     handleError(res, error, "Error fetching watchlist");
   }
