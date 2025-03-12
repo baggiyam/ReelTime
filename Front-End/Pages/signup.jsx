@@ -16,7 +16,6 @@ const Signup = ({ setToken }) => {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const navigate = useNavigate();
-
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -42,33 +41,33 @@ const Signup = ({ setToken }) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
-
     try {
       const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/verification`, {
         email: formData.email,
         verificationCode,
       });
-
-      console.log("Verification response:", res);
+      console.log("Full response:", res);
       setMessage(res.data.message);
 
       if (res.data.token) {
         localStorage.setItem("authToken", res.data.token);
         setToken(res.data.token);
-        console.log("Token saved to localStorage:", res.data.token);
 
         setIsVerifying(false);
-        setFormData({ username: "", email: "", password: "" });
+        setFormData({
+          username: "",
+          email: "",
+          password: "",
+        });
         setVerificationCode("");
-
-        navigate("/", { state: { message: "Verification successful!" } });
-        window.location.reload();
       }
+
+
     } catch (error) {
       setMessage(error.response?.data?.message || "Verification failed!");
-    } finally {
-      setLoading(false);
     }
+    navigate("/", { state: { message: "Verification successful!" } });
+    window.location.reload();
   };
 
   return (

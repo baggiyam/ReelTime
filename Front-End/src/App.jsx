@@ -23,7 +23,7 @@ const App = () => {
     if (storedToken) {
       setToken(storedToken); // Set token in state
     }
-  }, [token]);
+  }, []);
 
   const handleLogout = () => {
     localStorage.removeItem('authToken'); // Remove token correctly from localStorage
