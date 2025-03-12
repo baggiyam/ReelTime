@@ -16,6 +16,7 @@ const Signup = ({ setToken }) => {
   const [isVerifying, setIsVerifying] = useState(false);
 
   const navigate = useNavigate();
+
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
@@ -26,7 +27,7 @@ const Signup = ({ setToken }) => {
     setMessage("");
 
     try {
-      const res = await axios.post("http://localhost:5002/api/auth/signup", formData);
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/signup`, formData);
       console.log("Signup response:", res.data);
       setMessage("Verification code sent to your email.");
       setIsVerifying(true);
@@ -41,34 +42,33 @@ const Signup = ({ setToken }) => {
     e.preventDefault();
     setLoading(true);
     setMessage("");
+
     try {
-      const res = await axios.post("http://localhost:5002/api/auth/verification", {
+      const res = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/verification`, {
         email: formData.email,
         verificationCode,
       });
-      console.log("Full response:", res);
+
+      console.log("Verification response:", res);
       setMessage(res.data.message);
+
       if (res.data.token) {
-        localStorage.setItem('authToken', res.data.token);
-        const savedToken = localStorage.getItem('authToken');
+        localStorage.setItem("authToken", res.data.token);
         setToken(res.data.token);
-        console.log("Token saved to localStorage:", savedToken);
+        console.log("Token saved to localStorage:", res.data.token);
 
         setIsVerifying(false);
-        setFormData({
-          username: "",
-          email: "",
-          password: "",
-        });
+        setFormData({ username: "", email: "", password: "" });
         setVerificationCode("");
+
+        navigate("/", { state: { message: "Verification successful!" } });
+        window.location.reload();
       }
-
-
     } catch (error) {
       setMessage(error.response?.data?.message || "Verification failed!");
+    } finally {
+      setLoading(false);
     }
-    navigate("/", { state: { message: "Verification successful!" } });
-    window.location.reload();
   };
 
   return (

@@ -1,18 +1,17 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import "../Styles/Home.css";
-import axios from 'axios';  // Corrected the typo
+import axios from 'axios';
 
 const Home = () => {
-    const [movies, setMovies] = useState([]);  // Corrected state variable name to 'setMovies'
+    const [movies, setMovies] = useState([]);
     const [index, setIndex] = useState(0);
 
     useEffect(() => {
-        // Fetching movie data from API
-        axios.get("http://localhost:5002/api/movies/")
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/movies/`)
             .then((response) => {
                 const movieData = response.data;
-                const sortedMovies = movieData.slice(-5).reverse();  // Fetching the last 5 movies
+                const sortedMovies = movieData.slice(-5).reverse();
                 setMovies(sortedMovies);
             })
             .catch((error) => {
@@ -21,12 +20,11 @@ const Home = () => {
     }, []);
 
     useEffect(() => {
-        // Set interval to switch between movies every 5 seconds
         if (movies.length > 0) {
             const interval = setInterval(() => {
-                setIndex(prevIndex => (prevIndex + 1) % movies.length);  // Loop through the movies
+                setIndex(prevIndex => (prevIndex + 1) % movies.length);
             }, 5000);
-            return () => clearInterval(interval);  // Clean up interval on unmount
+            return () => clearInterval(interval);
         }
     }, [movies]);
 
@@ -46,8 +44,6 @@ const Home = () => {
                 </div>
             </div>
 
-
-            {/* Movie List Section */}
             <section className="movie-list-section Homepage">
                 <h2>Latest Movies</h2>
                 <div className="movie-list">
@@ -71,7 +67,6 @@ const Home = () => {
                 </div>
             </section>
         </div>
-
     );
 };
 

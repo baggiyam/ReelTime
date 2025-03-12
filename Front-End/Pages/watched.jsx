@@ -1,4 +1,3 @@
-// WatchedPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Styles/watched.css";
@@ -7,7 +6,7 @@ const WatchedPage = ({ token }) => {
     const [watchedMovies, setWatchedMovies] = useState([]);
 
     useEffect(() => {
-        axios.get("http://localhost:5002/api/watched", {
+        axios.get(`${import.meta.env.VITE_API_BASE_URL}/watched`, {
             headers: { Authorization: `Bearer ${token}` }
         })
             .then((response) => setWatchedMovies(response.data))

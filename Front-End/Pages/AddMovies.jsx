@@ -36,7 +36,7 @@ const AddMoviePage = ({ token }) => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post("http://localhost:5002/api/movies", formData, {
+            const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/movies`, formData, {
                 headers: { Authorization: `Bearer ${token}`, "Content-Type": "application/json" },
             });
             showPopup("Movie added successfully!");

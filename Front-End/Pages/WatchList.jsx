@@ -1,4 +1,3 @@
-// WatchlistPage.js
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import "../Styles/WatchList.css";
@@ -9,11 +8,11 @@ const WatchlistPage = ({ token }) => {
   const [popupVisible, setPopupVisible] = useState(false);
 
   useEffect(() => {
-    axios.get("http://localhost:5002/api/watchlist", {
+    axios.get(`${import.meta.env.VITE_API_BASE_URL}/movies/watchlist`, {
       headers: { Authorization: `Bearer ${token}` }
     })
-      .then((response) => setWatchlist(response.data))
-      .catch(() => setPopupMessage("Failed to load watchlist."));
+      .then(response => setWatchlist(response.data))
+      .catch(() => showPopup("Failed to load watchlist."));
   }, [token]);
 
   const showPopup = (message) => {
@@ -23,7 +22,7 @@ const WatchlistPage = ({ token }) => {
   };
 
   const removeFromWatchlist = (movieId) => {
-    axios.delete(`http://localhost:5002/api/watchlist/${movieId}`, {
+    axios.delete(`${import.meta.env.VITE_API_BASE_URL}/movies/watchlist/${movieId}`, {
       headers: { Authorization: `Bearer ${token}` }
     })
       .then(() => {
@@ -38,19 +37,15 @@ const WatchlistPage = ({ token }) => {
       <h1>My Watchlist</h1>
       {popupVisible && <div className="popup">{popupMessage}</div>}
       <div className="movie-list">
-        {watchlist.length > 0 ? (
-          watchlist.map((movie) => (
-            <div key={movie._id} className="movie-card">
-              <img src={movie.poster} alt={movie.title} />
-              <div className="movie-info">
-                <h3>{movie.title}</h3>
-                <button onClick={() => removeFromWatchlist(movie._id)}>Remove</button>
-              </div>
+        {watchlist.length > 0 ? watchlist.map((movie) => (
+          <div key={movie._id} className="movie-card">
+            <img src={movie.poster} alt={movie.title} />
+            <div className="movie-info">
+              <h3>{movie.title}</h3>
+              <button onClick={() => removeFromWatchlist(movie._id)}>Remove</button>
             </div>
-          ))
-        ) : (
-          <p>No movies in your watchlist.</p>
-        )}
+          </div>
+        )) : <p>No movies in your watchlist.</p>}
       </div>
     </div>
   );

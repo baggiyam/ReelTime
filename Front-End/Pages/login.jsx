@@ -4,7 +4,7 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import '../Styles/Login.css';
 
-const LoginPage = ({ setToken }) => {  // ✅ Make sure setToken is received as a prop if needed
+const LoginPage = ({ setToken }) => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
@@ -20,9 +20,9 @@ const LoginPage = ({ setToken }) => {  // ✅ Make sure setToken is received as 
     }
 
     try {
-      const response = await axios.post('http://localhost:5002/api/auth/login', { email, password });
+      const response = await axios.post(`${import.meta.env.VITE_API_BASE_URL}/auth/login`, { email, password });
 
-      console.log("This is the token:", response.data.token); // ✅ Corrected log message
+      console.log("This is the token:", response.data.token);
 
       if (response.data.token) {
         localStorage.setItem('authToken', response.data.token);
@@ -35,10 +35,10 @@ const LoginPage = ({ setToken }) => {  // ✅ Make sure setToken is received as 
       }
 
       navigate("/");
-      window.location.reload(); 
+      window.location.reload();
 
     } catch (error) {
-      setErrorMessage(error.response?.data?.message || "Login failed! Please try again."); // ✅ Added fallback error message
+      setErrorMessage(error.response?.data?.message || "Login failed! Please try again.");
     }
   };
 
